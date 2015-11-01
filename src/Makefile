@@ -13,4 +13,4 @@ envelope: envelope.c sacio.c sac.h
 	${CC} -o ${BIN}/$@ $^ ${INCLUDE} ${LIBS}
 
 clean:
-	rm stalta *.o
+	rm ${BIN}/* *.o
