@@ -1,5 +1,5 @@
 CC = gcc
-LIBS = -lsac -lsacio -L/usr/local/sac/lib
+LIBS = -lm -lsac -lsacio -L/usr/local/sac/lib
 INCLUDE = -I/usr/local/sac/include
 
 all: stalta envelope
