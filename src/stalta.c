@@ -2,7 +2,7 @@
  * Finding micoearthquakes using STA/LTA method.
  *
  * Author: Mijian Xu
- * Lasting update: 2015-11-1
+ * update: 2015-11-1
 ##############################################*/
 
 #include <stdio.h>
