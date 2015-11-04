@@ -1,10 +1,3 @@
-/*##############################################
- * Finding micoearthquakes using STA/LTA method.
- *
- * Author: Mijian Xu
- * update: 2015-11-1
-##############################################*/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -16,7 +9,7 @@ int main(int argc, char **argv) {
    char *kname, *outname;
    SACHEAD hd;
    float		*src, *srcenv,  *threshold;
-   int i, k, nlen, sta_len, min_bound, max_bound, lta_len, error,
+   int i, j, k, nlen, sta_len, min_bound, max_bound, lta_len, error,
        sm_factor, time_begin_len, time_end_len, isout;
    float dt, sta_rang, lta_rang, gate, mid_time, sta, lta, buf_aft, buf_sta_bef, buf_lta_bef, frac;
    float *smooth(float *x, int nlen, int N);
@@ -55,17 +48,15 @@ int main(int argc, char **argv) {
       fprintf(stderr,"Usage: stalta -Iinput.sac -Ssta_len -Llta_len -Msmooth_factor -Tthreshold -Ooutput.sac\n");
       return -1;
    }
-   
-/*   Read parameters   */
+//   printf("%s\n", kname);
    src = read_sac(kname, &hd);
    nlen = hd.npts;
    dt = hd.delta;
    srcenv = (float *) malloc(sizeof(float) * nlen);
-
-/*  calculate envelope  */
    envelope(nlen, src, srcenv);
-
-/*  do STA/LTA  */
+//   kname = strdup("enve.sac");    
+//   write_sac(kname,hd,srcenv);
+   
    sta_len = (int)(sta_rang / dt);
    lta_len = (int)(lta_rang / dt);
    frac = lta_len/sta_len;
@@ -90,11 +81,8 @@ int main(int argc, char **argv) {
       threshold[i] = (sta/lta)*frac;
    }
    for (i=nlen-sta_len/2;i<nlen;i++){threshold[i] = 0;}
-
-/*  do smooth  */
    threshold = smooth(threshold,nlen,sm_factor);
 
-/*  find peaks  */
    k = 0;
    for (i=1;i<nlen-1;i++){
       if (threshold[i-1]<threshold[i] && threshold[i+1]<threshold[i] && threshold[i]>gate){
