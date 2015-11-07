@@ -1,14 +1,12 @@
 /*************************************************************************
     > File Name: envelope.c
-    > Author: xu_mijia
+    > Author: xu_mijian
 *************************************************************************/
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <omp.h>
 #include <math.h>
-#include <time.h>
 #include <sac.h>
 #include "sac.h"
 

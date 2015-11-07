@@ -6,7 +6,7 @@ all: stalta envelope
 
 BIN = ../bin
 
-stalta:  stalta.c sac.h sacio.c smooth.c
+stalta:  stalta.c sac.h sacio.c detrend.c smooth.c
 	${CC} -o ${BIN}/$@ $^ ${INCLUDE} ${LIBS}
 
 envelope: envelope.c sacio.c sac.h
