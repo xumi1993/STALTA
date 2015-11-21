@@ -25,6 +25,8 @@ int main(int argc, char **argv) {
    transition_bandwidth = 0.0;
    attenuation = 0.0;
    passes = 2;
+   gate = 2;
+   sm_factor = 1001;
  /* input parameters */
    for (i=1; !error && i < argc; i++) {
       if (argv[i][0] == '-') {
@@ -75,7 +77,7 @@ int main(int argc, char **argv) {
       }
    }
    if (argc == 1 || error) {
-      fprintf(stderr,"Usage: stalta -Iinput.sac -Ssta_len -Llta_len -Msmooth_factor -Tthreshold -D -Ftype/order/f1[/f2] [-Ooutput.sac]\n");
+      fprintf(stderr,"Usage: stalta -Iinput.sac -Ssta_len -Llta_len [-Msmooth_factor] [-Tthreshold] [-D] [-Ftype/order/f1[/f2]] [-Ooutput.sac]\n");
       return -1;
    }
 //   printf("%s\n", kname);
