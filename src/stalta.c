@@ -1,3 +1,13 @@
+/* ---------------------------
+Automatic earthquake detection using STA/LTA method
+
+Author: Mijian Xu, Tao Wang
+
+Revision History
+    Mijian Xu   11/04/2015  Initial revision
+    Tao Wang    12/04/2015  Add trigger function
+----------------------------*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,8 +22,8 @@ int main(int argc, char **argv) {
    float		*src, *srcenv,  *threshold;
    int i, j, k, nlen, sta_len, min_bound, max_bound, lta_len, error,
        sm_factor, time_begin_len, time_end_len, isout, isdetrend,
-       isfilter, order, passes;
-   float dt, sta_rang, lta_rang, gate, mid_time, sta, lta,
+       isfilter, order, passes, iflag;
+   float dt, sta_rang, lta_rang, time_trigger, detrigger, gate, mid_time, sta, lta,
          buf_aft, buf_sta_bef, buf_lta_bef, frac, f1, f2,
          transition_bandwidth, attenuation, low, high;
    float *smooth(float *x, int nlen, int N);
@@ -22,10 +32,12 @@ int main(int argc, char **argv) {
    isout = 0;
    isdetrend = 0;
    isfilter = 0;
+   iflag = 0;
    transition_bandwidth = 0.0;
    attenuation = 0.0;
    passes = 2;
-   gate = 2;
+   gate = 3.2;
+   detrigger = 1.2;
    sm_factor = 1001;
  /* input parameters */
    for (i=1; !error && i < argc; i++) {
@@ -49,6 +61,9 @@ int main(int argc, char **argv) {
                break;
             case 'T':
                sscanf(&argv[i][2],"%f",&gate);
+               break;
+            case 'E':
+               sscanf(&argv[i][2],"%f",&detrigger);
                break;
             case 'D':
                isdetrend = 1;
@@ -77,7 +92,7 @@ int main(int argc, char **argv) {
       }
    }
    if (argc == 1 || error) {
-      fprintf(stderr,"Usage: stalta -Iinput.sac -Ssta_len -Llta_len [-Msmooth_factor] [-Tthreshold] [-D] [-Ftype/order/f1[/f2]] [-Ooutput.sac]\n");
+      fprintf(stderr,"Usage: stalta -Iinput.sac -Ssta_len -Llta_len [-Msmooth_factor] [-Tthreshold] [-Edetrigger] [-D] [-Ftype/order/f1[/f2]] [-Ooutput.sac]\n");
       return -1;
    }
 //   printf("%s\n", kname);
@@ -85,6 +100,11 @@ int main(int argc, char **argv) {
    nlen = hd.npts;
    dt = hd.delta;
    staname = hd.kstnm;
+//   printf("%s\n", hd.kstnm);
+   if(lta_rang > dt*nlen){
+     printf("Error: The length of the sac file %s is less than lta\n",kname);
+     return -1; 
+   }
    if (isdetrend){detrend(src, nlen);}
    if (isfilter){
        xapiir(src, nlen, SAC_BUTTERWORTH,
@@ -118,14 +138,36 @@ int main(int argc, char **argv) {
       lta += buf_aft - buf_lta_bef;
       threshold[i] = (sta/lta)*frac;
    }
+
+//modified by wtao calculate sta/lta for the beginning lta points
+    lta=0;
+   for(i=0;i<lta_len;i++){
+     lta += srcenv[i]*srcenv[i];
+    }      
+   for(i=0;i<lta_len;i++){
+     sta=0;
+     if(i> (int) (sta_len/2)){
+       for(j=(i-sta_len/2);j<(i+sta_len/2);j++){
+        sta += srcenv[j]*srcenv[j];
+       } 
+     }
+      threshold[i] = (sta/lta)*frac;
+   }
+//end of modification
+
    for (i=nlen-sta_len/2;i<nlen;i++){threshold[i] = 0;}
    threshold = smooth(threshold,nlen,sm_factor);
 
    k = 0;
    for (i=1;i<nlen-1;i++){
-      if (threshold[i-1]<threshold[i] && threshold[i+1]<threshold[i] && threshold[i]>gate){
+      if (threshold[i]>gate && iflag ==0){
          ++k;
-         printf("%s %d %d %f %f\n",staname,k,i,i*dt,threshold[i]);
+         time_trigger=i*dt;
+         iflag=1;
+      }
+      if((threshold[i]<detrigger || i*dt > 150+time_trigger)&& iflag == 1){
+        printf("%d %10.2f %10.2f\n",k,time_trigger,i*dt);
+        iflag=0;
       }
    }
 
